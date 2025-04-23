@@ -1,5 +1,23 @@
 #include <iostream>
 #include <vector>
+#include <termios.h>
+#include <unistd.h>
+#define KEY_UP 65
+#define KEY_DOWN 66
+#define KEY_LEFT 68
+#define KEY_RIGHT 67
+#define KEY_ENTER 10
+int getch() {
+  termios oldt, newt;
+  int ch;
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  ch = getchar();
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  return ch;
+}
 using namespace std;
 class Task {
 private:
@@ -206,21 +224,77 @@ public:
     cout << "Task with ID " << id << " not found.\n";
   }
 };
-
 int main() {
-  ToDoList todoList;
-  todoList.addTask("Task 1", "Description 1", false);
-  todoList.addTask("Task 2", "Description 2", true);
-  todoList.addTask("Task 3", "Description 3", false);
-  cout << "All Tasks:\n";
-  todoList.showTasks();
-  todoList.deleteTaskById(2);
-  cout << "\nTasks after deletion:\n";
-  todoList.showTasks();
-  cout << "\nFiltering tasks:\n";
-  todoList.filterTasks();
-  cout << "\nUpdate tasks:\n";
-  todoList.updateTaskById();
-  todoList.showTasks();
-
+  ToDoList manager;
+  int secim = 0;
+  while (true) {
+    system("clear");
+    cout << "Task Manager Menu:\n\n";
+    string options[] = {
+      "1. Show Tasks",
+      "2. Add Task",
+      "3. Update Task",
+      "4. Delete Task",
+      "5. Filter Tasks",
+      "6. Exit"
+  };
+    for (int i = 0; i < 6; ++i) {
+      if (i == secim)
+        cout << " > " << options[i] << endl;
+      else
+        cout << "   " << options[i] << endl;
+    }
+    int c = getch();
+    if (c == 27) {
+      int c1 = getch();
+      int c2 = getch();
+      if (c1 == 91) {
+        switch (c2) {
+          case KEY_UP:
+            secim = (secim > 0) ? secim - 1 : 5;
+          break;
+          case KEY_DOWN:
+            secim = (secim < 5) ? secim + 1 : 0;
+          break;
+        }
+      }
+    } else if (c == '\n' || c == '\r') {
+      system("clear");
+      switch (secim) {
+        case 0:
+          manager.showTasks();
+        break;
+        case 1: {
+          string title, description;
+          cout << "Enter task title: ";
+          cin.ignore();
+          getline(cin, title);
+          cout << "Enter task description: ";
+          getline(cin, description);
+          manager.addTask(title, description, false);
+          cout << "Task added!\n";
+          break;
+        }
+        case 2:
+          manager.updateTaskById();
+        break;
+        case 3: {
+          int id;
+          cout << "Enter ID of task to delete: ";
+          cin >> id;
+          manager.deleteTaskById(id);
+          break;
+        }
+        case 4:
+          manager.filterTasks();
+        break;
+        case 5:
+          cout << "Exiting\n";
+        return 0;
+      }
+      cout << "\nPress Enter to continue...";
+      cin.ignore();
+      cin.get();
+    }
+  }
 }
