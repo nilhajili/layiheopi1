@@ -10,7 +10,6 @@
 #define KEY_LEFT 68
 #define KEY_RIGHT 67
 #define KEY_ENTER 10
-
 int getch() {
     termios oldt, newt;
     int ch;
@@ -23,20 +22,28 @@ int getch() {
     return ch;
 }
 using namespace std;
-
 class Admin {
 private:
     string _username;
     string _password;
 
 public:
-    Admin(string username, string password)
-        : _username(username), _password(password) {}
-
+    Admin(string username, string password) {
+        set_username(username);
+        set_password(password);
+    }
+    void set_username(string username) {
+        _username=username;
+    }
+    void set_password(string password) {
+        _password=password;
+    }
     string getUsername() const {
         return _username;
     }
-
+    string getPassword() const {
+        return _password;
+    }
     bool checkPassword(const string& password) const {
         return _password == password;
     }
@@ -45,7 +52,6 @@ class AdminManager {
 private:
     vector<Admin> admins;
     Admin* currentAdmin = nullptr;
-
 public:
     bool signUp(const string& username, const string& password) {
         for (const auto& admin : admins) {
@@ -70,27 +76,23 @@ public:
         cout << "Incorrect username or password.\n";
         return false;
     }
-
     bool isLoggedIn() const {
         return currentAdmin != nullptr;
     }
 };
-
 AdminManager adminManager;
-
 void showLoginMenu() {
     while (true) {
         system("clear");
-        cout << "==== Admin Panel Login ====\n";
+        cout << "Admin Panel Login\n";
         cout << "1. Sign Up\n";
         cout << "2. Sign In\n";
         cout << "3. Exit\n";
-        cout << "Select an option: ";
+        cout << "Enter your choice: ";
         int option;
         cin >> option;
         cin.ignore();
         string username, password;
-
         switch (option) {
             case 1:
                 cout << "Username: ";
@@ -109,7 +111,7 @@ void showLoginMenu() {
             case 3:
                 return;
         }
-        cout << "\nPress Enter to continue...";
+        cout << "\nPress Enter to continue";
         cin.get();
     }
 }
@@ -371,7 +373,7 @@ public:
             cout << "Available Tasks:\n";
             for (int i = 0; i < tasks.size(); ++i) {
                 if (i == selection) {
-                    cout << "\033[32m > ";  // Green color for selected task
+                    cout << "\033[32m > ";
                 } else {
                     cout << "   ";
                 }
